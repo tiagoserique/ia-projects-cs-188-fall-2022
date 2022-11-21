@@ -107,7 +107,7 @@ def depthFirstSearch(problem: SearchProblem):
 
             succesors = problem.getSuccessors(state)
     
-            for newState, nextAction, coast in succesors:
+            for newState, nextAction, cost in succesors:
                 newAction = path + [nextAction]
                 newNode = (newState, newAction)
                 neighborhood.push(newNode)
@@ -138,7 +138,7 @@ def breadthFirstSearch(problem: SearchProblem):
 
             succesors = problem.getSuccessors(state)
     
-            for newState, nextAction, coast in succesors:
+            for newState, nextAction, cost in succesors:
                 newAction = path + [nextAction]
                 newNode = (newState, newAction)
                 neighborhood.push(newNode)
@@ -149,6 +149,33 @@ def breadthFirstSearch(problem: SearchProblem):
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+
+    firstState = problem.getStartState()
+    start = (firstState, [], 0)
+
+    neighborhood = util.PriorityQueue()
+    neighborhood.push(start, 0)
+
+    visited = []
+
+    while not neighborhood.isEmpty():
+        state, path, previousCost = neighborhood.pop()
+
+        if problem.isGoalState(state):
+            return path
+
+        if state not in visited:
+            visited.append(state)
+
+            succesors = problem.getSuccessors(state)
+    
+            for newState, nextAction, cost in succesors:
+                newCost = cost + previousCost
+                newAction = path + [nextAction]
+                newNode = (newState, newAction, newCost)
+                neighborhood.push(newNode, newCost)
+
+    return path
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
