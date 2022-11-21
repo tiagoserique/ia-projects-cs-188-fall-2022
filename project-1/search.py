@@ -96,7 +96,6 @@ def depthFirstSearch(problem: SearchProblem):
 
     visited = []
 
-
     while not neighborhood.isEmpty():
         state, path = neighborhood.pop()
 
@@ -119,6 +118,32 @@ def depthFirstSearch(problem: SearchProblem):
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+
+    firstState = problem.getStartState()
+    start = (firstState, [])
+
+    neighborhood = util.Queue()
+    neighborhood.push(start)
+
+    visited = []
+
+    while not neighborhood.isEmpty():
+        state, path = neighborhood.pop()
+
+        if problem.isGoalState(state):
+            return path
+
+        if state not in visited:
+            visited.append(state)
+
+            succesors = problem.getSuccessors(state)
+    
+            for newState, nextAction, coast in succesors:
+                newAction = path + [nextAction]
+                newNode = (newState, newAction)
+                neighborhood.push(newNode)
+
+    return path
     util.raiseNotDefined()
 
 def uniformCostSearch(problem: SearchProblem):
