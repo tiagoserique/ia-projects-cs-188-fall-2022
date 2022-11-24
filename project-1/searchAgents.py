@@ -298,6 +298,7 @@ class CornersProblem(search.SearchProblem):
             else: visited.append((corner, False))
 
         self.startState = ((self.startingPosition), tuple(visited))
+        self.cornerCount = 4
 
     def getStartState(self):
         """
@@ -388,6 +389,50 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
+
+    (x, y) = state[0]
+    tupleOfCorners = state[1]
+
+    minimumDistance = 0
+    previousCornerObstacleCounter = 0
+    countCorners = 0
+
+    for corner in tupleOfCorners:
+        cornerState = corner[1]
+        if (cornerState == False):
+            cornerCoordinates = corner[0]
+        
+            euclideanDistance = ( (x - cornerCoordinates[0]) ** 2 
+                + (y - cornerCoordinates[1]) ** 2 ) ** 0.5
+
+            obstacles = 0
+            countCorners += 1
+
+            if (cornerCoordinates == corners[0]):
+                if (walls[x][y-1] == True): obstacles += 1
+                if (walls[x-1][y] == True): obstacles += 1
+            elif (cornerCoordinates == corners[1]):
+                if (walls[x][y+1] == True): obstacles += 1
+                if (walls[x-1][y] == True): obstacles += 1
+            elif (cornerCoordinates == corners[2]):
+                if (walls[x][y-1] == True): obstacles += 1
+                if (walls[x+1][y] == True): obstacles += 1
+            elif (cornerCoordinates == corners[3]):
+                if (walls[x][y+1] == True): obstacles += 1
+                if (walls[x+1][y] == True): obstacles += 1
+
+            firstCondition  = euclideanDistance < minimumDistance
+            secondCondition = obstacles < previousCornerObstacleCounter
+            thirdCondition  = minimumDistance == 0
+            if ( firstCondition and secondCondition ) or ( thirdCondition ):
+                minimumDistance = euclideanDistance
+                previousCornerObstacleCounter = obstacles
+
+    if (countCorners < problem.cornerCount): problem.cornerCount = countCorners
+    elif (countCorners > problem.cornerCount): return minimumDistance * 2
+
+
+    return minimumDistance
     return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
