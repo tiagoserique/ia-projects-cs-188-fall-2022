@@ -198,11 +198,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         Here are some method calls that might be useful when implementing minimax.
 
-        gameState.getLegalActions(agentIndex):
+        gameState.getLegalActions(agent_index):
         Returns a list of legal actions for an agent
-        agentIndex=0 means Pacman, ghosts are >= 1
+        agent_index=0 means Pacman, ghosts are >= 1
 
-        gameState.generateSuccessor(agentIndex, action):
+        gameState.generateSuccessor(agent_index, action):
         Returns the successor game state after an agent takes an action
 
         gameState.getNumAgents():
@@ -215,6 +215,54 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+
+        import sys
+
+        def max_level(game_state, depth):
+            current_depth = depth + 1
+            
+            if game_state.isWin() or game_state.isLose() or current_depth == self.depth: 
+                return self.evaluationFunction(game_state)
+            
+            max_value = -999999
+            actions = game_state.getLegalActions(0)
+            
+            for action in actions:
+                successor = game_state.generateSuccessor(0, action)
+                max_value = max(max_value, min_level(successor, current_depth, 1))
+            
+            return max_value
+        
+        def min_level(game_state, depth, agent_index):
+            min_value = sys.maxsize
+            
+            if game_state.isWin() or game_state.isLose():
+                return self.evaluationFunction(game_state)
+            
+            actions = game_state.getLegalActions(agent_index)
+            
+            for action in actions:
+                successor = game_state.generateSuccessor(agent_index, action)
+                if agent_index == (game_state.getNumAgents() - 1):
+                    min_value = min(min_value, max_level(successor, depth))
+                else:
+                    min_value = min(min_value, min_level(successor, depth, agent_index + 1))
+            
+            return min_value
+     
+        actions = gameState.getLegalActions(0)
+        current_score = -999999
+        return_action = ''
+        for action in actions:
+            next_state = gameState.generateSuccessor(0, action)
+
+            score = min_level(next_state, 0, 1)
+
+            if score > current_score:
+                return_action = action
+                current_score = score
+        
+        return return_action
         util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -227,6 +275,77 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+
+        import sys
+
+        def max_level(game_state, depth, alpha, beta):
+            current_depth = depth + 1
+
+            if game_state.isWin() or game_state.isLose() or current_depth == self.depth: 
+                return self.evaluationFunction(game_state)
+
+            max_value = -999999
+            actions   = game_state.getLegalActions(0)
+            alpha1    = alpha
+
+            for action in actions:
+                successor = game_state.generateSuccessor(0, action)
+                max_value = max(max_value, min_level(successor, current_depth, 1, alpha1, beta))
+                
+                if max_value > beta:
+                    return max_value
+                
+                alpha1 = max(alpha1, max_value)
+
+            return max_value
+        
+        def min_level(game_state, depth, agent_index, alpha, beta):
+            min_value = sys.maxsize
+
+            if game_state.isWin() or game_state.isLose(): 
+                return self.evaluationFunction(game_state)
+
+            actions = game_state.getLegalActions(agent_index)
+            beta1   = beta
+            for action in actions:
+                successor = game_state.generateSuccessor(agent_index,action)
+
+                if agent_index == (game_state.getNumAgents() - 1):
+                    min_value = min(min_value, max_level(successor, depth, alpha, beta1))
+
+                    if min_value < alpha:
+                        return min_value
+                    
+                    beta1 = min(beta1,min_value)
+                else:
+                    min_value = min(min_value, min_level(successor, depth, agent_index + 1, alpha, beta1))
+
+                    if min_value < alpha:
+                        return min_value
+                    
+                    beta1 = min(beta1, min_value)
+
+            return min_value
+
+        actions = gameState.getLegalActions(0)
+        current_score = -999999
+        return_action = ''
+        alpha = -999999
+        beta = 999999
+        for action in actions:
+            nextState = gameState.generateSuccessor(0, action)
+            score = min_level(nextState, 0, 1, alpha, beta)
+
+            if score > current_score:
+                return_action = action
+                current_score = score
+
+            if score > beta:
+                return return_action
+
+            alpha = max(alpha,score)
+
+        return return_action
         util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -242,6 +361,58 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+
+        #Used only for pacman agent hence agentindex is always 0.
+        def max_level(game_state, depth):
+            current_depth = depth + 1
+
+            if game_state.isWin() or game_state.isLose() or current_depth == self.depth: 
+                return self.evaluationFunction(game_state)
+
+            max_value = -999999
+            actions = game_state.getLegalActions(0)
+            for action in actions:
+                successor = game_state.generateSuccessor(0, action)
+                max_value = max (max_value, expect_level(successor, current_depth, 1))
+
+            return max_value
+        
+        def expect_level(game_state, depth, agent_index):
+            if game_state.isWin() or game_state.isLose(): 
+                return self.evaluationFunction(game_state)
+
+            actions = game_state.getLegalActions(agent_index)
+            total_expected_value = 0
+            number_of_actions = len(actions)
+            for action in actions:
+                successor = game_state.generateSuccessor(agent_index, action)
+
+                if agent_index == (game_state.getNumAgents() - 1):
+                    expected_value = max_level(successor, depth)
+                else:
+                    expected_value = expect_level(successor, depth, agent_index + 1)
+
+                total_expected_value = total_expected_value + expected_value
+
+            if number_of_actions == 0:
+                return  0
+
+            return float(total_expected_value)/float(number_of_actions)
+        
+        #Root level action.
+        actions = gameState.getLegalActions(0)
+        currentScore = -999999
+        returnAction = ''
+        for action in actions:
+            nextState = gameState.generateSuccessor(0,action)
+            score = expect_level(nextState,0,1)
+
+            if score > currentScore:
+                returnAction = action
+                currentScore = score
+                
+        return returnAction
+
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState: GameState):
@@ -252,6 +423,20 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+
+    foods    = currentGameState.getFood().asList()
+    position = currentGameState.getPacmanPosition()
+    closest_food_distance = min(manhattanDistance(position, food) for food in foods) if foods else 0.5
+    score    = currentGameState.getScore()
+
+    '''
+      Sometimes pacman will stay put even when there's a dot right besides, because 
+      stop action has the same priority with other actions, so might be chosen when
+      multiple actions have the same evaluation, upon which we can improve maybe.
+    '''
+    evaluation = 1.0 / closest_food_distance + score
+    return evaluation
+
     util.raiseNotDefined()
 
 # Abbreviation
