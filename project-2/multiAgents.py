@@ -221,18 +221,23 @@ class MinimaxAgent(MultiAgentSearchAgent):
         def max_level(game_state, depth):
             current_depth = depth + 1
             
-            if game_state.isWin() or game_state.isLose() or current_depth == self.depth: 
+            condition = game_state.isWin() or game_state.isLose() or current_depth == self.depth
+            if condition: 
                 return self.evaluationFunction(game_state)
             
-            max_value = -999999
+            max_value = -9999999
             actions = game_state.getLegalActions(0)
             
             for action in actions:
                 successor = game_state.generateSuccessor(0, action)
-                max_value = max(max_value, min_level(successor, current_depth, 1))
+                max_value = max(
+                    max_value, 
+                    min_level(successor, current_depth, 1)
+                )
             
             return max_value
         
+
         def min_level(game_state, depth, agent_index):
             min_value = sys.maxsize
             
@@ -251,7 +256,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return min_value
      
         actions = gameState.getLegalActions(0)
-        current_score = -999999
+        current_score = -9999999
         return_action = ''
         for action in actions:
             next_state = gameState.generateSuccessor(0, action)
@@ -281,21 +286,25 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         def max_level(game_state, depth, alpha, beta):
             current_depth = depth + 1
 
-            if game_state.isWin() or game_state.isLose() or current_depth == self.depth: 
+            condition = game_state.isWin() or game_state.isLose() or current_depth == self.depth 
+            if condition: 
                 return self.evaluationFunction(game_state)
 
-            max_value = -999999
+            max_value = -9999999
             actions   = game_state.getLegalActions(0)
-            alpha1    = alpha
+            new_alpha = alpha
 
             for action in actions:
                 successor = game_state.generateSuccessor(0, action)
-                max_value = max(max_value, min_level(successor, current_depth, 1, alpha1, beta))
+                max_value = max(
+                    max_value, 
+                    min_level(successor, current_depth, 1, new_alpha, beta)
+                )
                 
                 if max_value > beta:
                     return max_value
                 
-                alpha1 = max(alpha1, max_value)
+                new_alpha = max(new_alpha, max_value)
 
             return max_value
         
@@ -305,33 +314,45 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if game_state.isWin() or game_state.isLose(): 
                 return self.evaluationFunction(game_state)
 
-            actions = game_state.getLegalActions(agent_index)
-            beta1   = beta
+            actions  = game_state.getLegalActions(agent_index)
+            new_beta = beta
             for action in actions:
-                successor = game_state.generateSuccessor(agent_index,action)
+                successor = game_state.generateSuccessor(agent_index, action)
 
                 if agent_index == (game_state.getNumAgents() - 1):
-                    min_value = min(min_value, max_level(successor, depth, alpha, beta1))
+                    min_value = min(
+                        min_value, 
+                        max_level(successor, depth, alpha, new_beta)
+                    )
 
                     if min_value < alpha:
                         return min_value
                     
-                    beta1 = min(beta1,min_value)
+                    new_beta = min(new_beta, min_value)
                 else:
-                    min_value = min(min_value, min_level(successor, depth, agent_index + 1, alpha, beta1))
+                    min_value = min(
+                        min_value, 
+                        min_level(
+                            successor, 
+                            depth, 
+                            agent_index + 1, 
+                            alpha, 
+                            new_beta
+                        )
+                    )
 
                     if min_value < alpha:
                         return min_value
                     
-                    beta1 = min(beta1, min_value)
+                    new_beta = min(new_beta, min_value)
 
             return min_value
 
         actions = gameState.getLegalActions(0)
-        current_score = -999999
+        current_score = -9999999
         return_action = ''
-        alpha = -999999
-        beta = 999999
+        alpha = -9999999
+        beta = 9999999
         for action in actions:
             nextState = gameState.generateSuccessor(0, action)
             score = min_level(nextState, 0, 1, alpha, beta)
@@ -343,10 +364,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if score > beta:
                 return return_action
 
-            alpha = max(alpha,score)
+            alpha = max(alpha, score)
 
         return return_action
-        util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -362,18 +382,20 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        #Used only for pacman agent hence agentindex is always 0.
         def max_level(game_state, depth):
             current_depth = depth + 1
 
-            if game_state.isWin() or game_state.isLose() or current_depth == self.depth: 
+            condition = game_state.isWin() or game_state.isLose() or current_depth == self.depth
+            if condition: 
                 return self.evaluationFunction(game_state)
 
-            max_value = -999999
+            max_value = -9999999
             actions = game_state.getLegalActions(0)
             for action in actions:
                 successor = game_state.generateSuccessor(0, action)
-                max_value = max (max_value, expect_level(successor, current_depth, 1))
+                max_value = max(
+                    max_value, expect_level(successor, current_depth, 1)
+                )
 
             return max_value
         
@@ -390,7 +412,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 if agent_index == (game_state.getNumAgents() - 1):
                     expected_value = max_level(successor, depth)
                 else:
-                    expected_value = expect_level(successor, depth, agent_index + 1)
+                    expected_value = expect_level(
+                        successor, 
+                        depth, 
+                        agent_index + 1
+                    )
 
                 total_expected_value = total_expected_value + expected_value
 
@@ -399,13 +425,12 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
             return float(total_expected_value)/float(number_of_actions)
         
-        #Root level action.
         actions = gameState.getLegalActions(0)
-        currentScore = -999999
+        currentScore = -9999999
         returnAction = ''
         for action in actions:
-            nextState = gameState.generateSuccessor(0,action)
-            score = expect_level(nextState,0,1)
+            nextState = gameState.generateSuccessor(0, action)
+            score = expect_level(nextState, 0, 1)
 
             if score > currentScore:
                 returnAction = action
@@ -423,21 +448,48 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
+    
+    score = 0
+    new_position = currentGameState.getPacmanPosition()
+    new_food     = currentGameState.getFood()
+    new_ghost_states  = currentGameState.getGhostStates()
+    number_of_pellets = len(currentGameState.getCapsules())
+    number_of_no_foods = len(new_food.asList(False))           
+    new_scared_times  = [
+        ghost_state.scaredTimer 
+        for ghost_state in new_ghost_states
+    ]
 
-    foods    = currentGameState.getFood().asList()
-    position = currentGameState.getPacmanPosition()
-    closest_food_distance = min(manhattanDistance(position, food) for food in foods) if foods else 0.5
-    score    = currentGameState.getScore()
 
-    '''
-      Sometimes pacman will stay put even when there's a dot right besides, because 
-      stop action has the same priority with other actions, so might be chosen when
-      multiple actions have the same evaluation, upon which we can improve maybe.
-    '''
-    evaluation = 1.0 / closest_food_distance + score
-    return evaluation
+    ghost_positions = []
+    for ghost in new_ghost_states:
+        ghost_positions.append(ghost.getPosition())
+    
+    ghost_distance = [0]
+    for position in ghost_positions:
+        ghost_distance.append(manhattanDistance(new_position, position))
 
-    util.raiseNotDefined()
+
+    food_list = new_food.asList()
+    food_distance = [0]
+    for position in food_list:
+        food_distance.append(manhattanDistance(new_position, position))
+
+
+    sum_scared_times   = sum(new_scared_times)
+    sum_ghost_distance = sum (ghost_distance)
+    reciprocal_food_distance = 0
+    if sum(food_distance) > 0:
+        reciprocal_food_distance = 1.0 / sum(food_distance)
+        
+    score += currentGameState.getScore() + reciprocal_food_distance + number_of_no_foods
+
+    if sum_scared_times > 0:    
+        score += sum_scared_times + (-1 * number_of_pellets) + (-1 * sum_ghost_distance)
+    else :
+        score += sum_ghost_distance + number_of_pellets
+    
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
