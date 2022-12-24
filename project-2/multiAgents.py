@@ -352,7 +352,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         current_score = -9999999
         return_action = ''
         alpha = -9999999
-        beta = 9999999
+        beta  = 9999999
         for action in actions:
             nextState = gameState.generateSuccessor(0, action)
             score = min_level(nextState, 0, 1, alpha, beta)
@@ -394,7 +394,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             for action in actions:
                 successor = game_state.generateSuccessor(0, action)
                 max_value = max(
-                    max_value, expect_level(successor, current_depth, 1)
+                    max_value, 
+                    expect_level(successor, current_depth, 1)
                 )
 
             return max_value
@@ -405,7 +406,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
             actions = game_state.getLegalActions(agent_index)
             total_expected_value = 0
-            number_of_actions = len(actions)
+            number_of_actions    = len(actions)
             for action in actions:
                 successor = game_state.generateSuccessor(agent_index, action)
 
@@ -452,10 +453,10 @@ def betterEvaluationFunction(currentGameState: GameState):
     score = 0
     new_position = currentGameState.getPacmanPosition()
     new_food     = currentGameState.getFood()
-    new_ghost_states  = currentGameState.getGhostStates()
-    number_of_pellets = len(currentGameState.getCapsules())
+    new_ghost_states   = currentGameState.getGhostStates()
+    number_of_pellets  = len(currentGameState.getCapsules())
     number_of_no_foods = len(new_food.asList(False))           
-    new_scared_times  = [
+    new_scared_times   = [
         ghost_state.scaredTimer 
         for ghost_state in new_ghost_states
     ]
@@ -486,7 +487,7 @@ def betterEvaluationFunction(currentGameState: GameState):
 
     if sum_scared_times > 0:    
         score += sum_scared_times + (-1 * number_of_pellets) + (-1 * sum_ghost_distance)
-    else :
+    else:
         score += sum_ghost_distance + number_of_pellets
     
     return score
